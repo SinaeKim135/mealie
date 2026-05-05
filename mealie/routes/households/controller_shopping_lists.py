@@ -8,6 +8,7 @@ from mealie.routes._base.base_controllers import BaseCrudController
 from mealie.routes._base.controller import controller
 from mealie.routes._base.mixins import HttpRepo
 from mealie.schema.household.group_shopping_list import (
+    MergeStrategy,
     ShoppingListAddRecipeParams,
     ShoppingListAddRecipeParamsBulk,
     ShoppingListCreate,
@@ -254,22 +255,39 @@ class ShoppingListController(BaseCrudController):
         return updated_list
 
     @router.post("/{item_id}/recipe", response_model=ShoppingListOut)
-    def add_recipe_ingredients_to_list(self, item_id: UUID4, data: list[ShoppingListAddRecipeParamsBulk]):
-        shopping_list, items = self.service.add_recipe_ingredients_to_list(item_id, data)
+    def add_recipe_ingredients_to_list(
+        self,
+        item_id: UUID4,
+        data: list[ShoppingListAddRecipeParamsBulk],
+        merge_strategy: MergeStrategy = Query(
+            MergeStrategy.default,
+            description=(
+                "How to merge incoming ingredients with existing shopping list items. "
+                "'default' merges only on matching food_id or exact note. 'fuzzy' also merges "
+                "free-text notes (no food_id) by string similarity (rapidfuzz, threshold 85). "
+                "Fuzzy mode populates ShoppingListItemsCollectionOut.merge_audit on the response."
+            ),
+        ),
+    ):
+        shopping_list, items = self.service.add_recipe_ingredients_to_list(item_id, data, merge_strategy)
 
         publish_list_item_events(self.publish_event, items)
         return shopping_list
 
     @router.post("/{item_id}/recipe/{recipe_id}", response_model=ShoppingListOut, deprecated=True)
     def add_single_recipe_ingredients_to_list(
-        self, item_id: UUID4, recipe_id: UUID4, data: ShoppingListAddRecipeParams | None = None
+        self,
+        item_id: UUID4,
+        recipe_id: UUID4,
+        data: ShoppingListAddRecipeParams | None = None,
+        merge_strategy: MergeStrategy = Query(MergeStrategy.default),
     ):
         # Compatibility function for old API
         # TODO: remove this function in the future
 
         data = data or ShoppingListAddRecipeParams(recipe_increment_quantity=1)
         bulk_data = [data.cast(ShoppingListAddRecipeParamsBulk, recipe_id=recipe_id)]
-        return self.add_recipe_ingredients_to_list(item_id, bulk_data)
+        return self.add_recipe_ingredients_to_list(item_id, bulk_data, merge_strategy=merge_strategy)
 
     @router.post("/{item_id}/recipe/{recipe_id}/delete", response_model=ShoppingListOut)
     def remove_recipe_ingredients_from_list(
