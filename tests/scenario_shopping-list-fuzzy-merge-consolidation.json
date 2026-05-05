@@ -3,7 +3,7 @@
     "Source": "192.168.65.1:39998",
     "Destination": "localhost",
     "RequestBody": "{\"name\": \"flour-recipe-fuzzy-1746200000\"}",
-    "ResponseBody": "\"flour-recipe-fuzzy-1746200000\"",
+    "ResponseBody": "{\"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\", \"slug\": \"flour-recipe-fuzzy-1746200000\"}",
     "RequestHeaders": {
       "Content-Type": [
         "application/json"
@@ -22,33 +22,7 @@
     "QueryParams": {},
     "StatusCode": 201,
     "Port": 9000,
-    "Timestamp": "2026-05-05T17:50:19.697Z",
-    "Scheme": "http"
-  },
-  {
-    "Source": "192.168.65.1:39998",
-    "Destination": "localhost",
-    "RequestBody": "",
-    "ResponseBody": "{\"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\", \"slug\": \"flour-recipe-fuzzy-1746200000\", \"name\": \"flour-recipe-fuzzy-1746200000\", \"recipe_ingredient\": []}",
-    "RequestHeaders": {
-      "Content-Type": [
-        "application/json"
-      ],
-      "Authorization": [
-        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
-      ]
-    },
-    "ResponseHeaders": {
-      "Content-Type": [
-        "application/json"
-      ]
-    },
-    "Method": "GET",
-    "Path": "/api/recipes/flour-recipe-fuzzy-1746200000",
-    "QueryParams": {},
-    "StatusCode": 200,
-    "Port": 9000,
-    "Timestamp": "2026-05-05T17:50:19.697Z",
+    "Timestamp": "2026-05-05T18:11:26.902Z",
     "Scheme": "http"
   },
   {
@@ -74,7 +48,7 @@
     "QueryParams": {},
     "StatusCode": 201,
     "Port": 9000,
-    "Timestamp": "2026-05-05T17:50:19.697Z",
+    "Timestamp": "2026-05-05T18:11:26.902Z",
     "Scheme": "http"
   },
   {
@@ -104,7 +78,7 @@
     },
     "StatusCode": 200,
     "Port": 9000,
-    "Timestamp": "2026-05-05T17:50:19.697Z",
+    "Timestamp": "2026-05-05T18:11:26.902Z",
     "Scheme": "http"
   }
 ]

@@ -3,7 +3,7 @@
     "Source": "192.168.65.1:39998",
     "Destination": "localhost",
     "RequestBody": "{\"name\": \"almond-flour-test-1746200000\"}",
-    "ResponseBody": "\"almond-flour-test-1746200000\"",
+    "ResponseBody": "{\"id\": \"e5f6a7b8-c9d0-1234-efab-345678901234\", \"slug\": \"almond-flour-test-1746200000\"}",
     "RequestHeaders": {
       "Content-Type": [
         "application/json"
@@ -22,33 +22,7 @@
     "QueryParams": {},
     "StatusCode": 201,
     "Port": 9000,
-    "Timestamp": "2026-05-05T17:50:32.791Z",
-    "Scheme": "http"
-  },
-  {
-    "Source": "192.168.65.1:39998",
-    "Destination": "localhost",
-    "RequestBody": "",
-    "ResponseBody": "{\"id\": \"e5f6a7b8-c9d0-1234-efab-345678901234\", \"slug\": \"almond-flour-test-1746200000\", \"name\": \"almond-flour-test-1746200000\", \"recipe_ingredient\": []}",
-    "RequestHeaders": {
-      "Content-Type": [
-        "application/json"
-      ],
-      "Authorization": [
-        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
-      ]
-    },
-    "ResponseHeaders": {
-      "Content-Type": [
-        "application/json"
-      ]
-    },
-    "Method": "GET",
-    "Path": "/api/recipes/almond-flour-test-1746200000",
-    "QueryParams": {},
-    "StatusCode": 200,
-    "Port": 9000,
-    "Timestamp": "2026-05-05T17:50:32.791Z",
+    "Timestamp": "2026-05-05T18:11:33.325Z",
     "Scheme": "http"
   },
   {
@@ -74,7 +48,7 @@
     "QueryParams": {},
     "StatusCode": 201,
     "Port": 9000,
-    "Timestamp": "2026-05-05T17:50:32.791Z",
+    "Timestamp": "2026-05-05T18:11:33.325Z",
     "Scheme": "http"
   },
   {
@@ -104,7 +78,7 @@
     },
     "StatusCode": 200,
     "Port": 9000,
-    "Timestamp": "2026-05-05T17:50:32.791Z",
+    "Timestamp": "2026-05-05T18:11:33.325Z",
     "Scheme": "http"
   }
 ]
