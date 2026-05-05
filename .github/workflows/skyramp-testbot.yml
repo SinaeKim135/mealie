@@ -81,11 +81,10 @@ jobs:
           targetReadyCheckTimeout: '900'
 
           # Backup: regenerate a fresh bearer token if the executor needs one
-          # at execution time (matches the ebikes-lwc reference pattern).
-          authTokenCommand: |
-            curl -fsS -X POST http://localhost:9000/api/auth/token \
-              -H 'Content-Type: application/x-www-form-urlencoded' \
-              -d 'username=changeme%40example.com&password=MyPassword' \
-              | python3 -c 'import sys,json;print(json.load(sys.stdin)["access_token"])'
+          # at execution time. Kept as a SINGLE LINE because Skyramp's executor
+          # runs this command directly (not through bash), so backslash line
+          # continuations end up as literal '\' chars in the token value and
+          # break JSON parsing later. Same single-line shape as ebikes-lwc.
+          authTokenCommand: "curl -fsS -X POST http://localhost:9000/api/auth/token -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=changeme%40example.com&password=MyPassword' | python3 -c 'import sys,json;print(json.load(sys.stdin)[\"access_token\"])'"
 
           skipTargetTeardown: 'true'
