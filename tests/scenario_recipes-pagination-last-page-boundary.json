@@ -2,8 +2,8 @@
   {
     "Source": "192.168.65.1:39998",
     "Destination": "localhost",
-    "RequestBody": "{\"name\": \"Testbot-LastPage-A\"}",
-    "ResponseBody": "{}",
+    "RequestBody": "{\"name\": \"Testbot-LastPageA-1746461298\"}",
+    "ResponseBody": "{\"slug\": \"testbot-lastpagea-1746461298\"}",
     "RequestHeaders": {
       "Content-Type": [
         "application/json"
@@ -22,14 +22,14 @@
     "QueryParams": {},
     "StatusCode": 201,
     "Port": 9000,
-    "Timestamp": "2026-05-05T16:49:02.421Z",
+    "Timestamp": "2026-05-05T21:05:54.086Z",
     "Scheme": "http"
   },
   {
     "Source": "192.168.65.1:39998",
     "Destination": "localhost",
-    "RequestBody": "{\"name\": \"Testbot-LastPage-B\"}",
-    "ResponseBody": "{}",
+    "RequestBody": "{\"name\": \"Testbot-LastPageB-1746461298\"}",
+    "ResponseBody": "{\"slug\": \"testbot-lastpageb-1746461298\"}",
     "RequestHeaders": {
       "Content-Type": [
         "application/json"
@@ -48,7 +48,7 @@
     "QueryParams": {},
     "StatusCode": 201,
     "Port": 9000,
-    "Timestamp": "2026-05-05T16:49:02.421Z",
+    "Timestamp": "2026-05-05T21:05:54.086Z",
     "Scheme": "http"
   },
   {
@@ -81,7 +81,7 @@
     },
     "StatusCode": 200,
     "Port": 9000,
-    "Timestamp": "2026-05-05T16:49:02.421Z",
+    "Timestamp": "2026-05-05T21:05:54.086Z",
     "Scheme": "http"
   }
 ]
