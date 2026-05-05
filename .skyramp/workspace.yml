@@ -4,7 +4,7 @@ services:
     language: python
     framework: pytest
     runtimeDetails:
-      serverStartCommand: "docker run -d --name mealie -p 9000:9000 -e ALLOW_SIGNUP=true -e TOKEN_TIME=720 -e DB_ENGINE=sqlite ghcr.io/mealie-recipes/mealie:nightly"
+      serverStartCommand: "bash .skyramp/start-mealie.sh"
       runtime: local
     api:
       baseUrl: http://localhost:9000
