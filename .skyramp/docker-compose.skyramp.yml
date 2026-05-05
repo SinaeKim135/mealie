@@ -1,7 +1,14 @@
 services:
   mealie:
-    image: ghcr.io/mealie-recipes/mealie:nightly
     container_name: mealie
+    # Build from the PR's source so Skyramp tests run against the code
+    # under review, not against the upstream nightly image. This mirrors
+    # how the ebikes-lwc reference deploys force-app from the PR branch
+    # before running tests.
+    build:
+      context: ..
+      target: production
+      dockerfile: docker/Dockerfile
     ports:
       - "9000:9000"
     environment:
@@ -12,5 +19,5 @@ services:
       test: ["CMD-SHELL", "curl -fsS http://localhost:9000/api/app/about >/dev/null 2>&1 || exit 1"]
       interval: 5s
       timeout: 3s
-      retries: 30
-      start_period: 10s
+      retries: 60
+      start_period: 30s
