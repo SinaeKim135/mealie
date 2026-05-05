@@ -10,3 +10,7 @@ services:
       baseUrl: http://localhost:9000
       authHeader: Authorization
       authType: bearer
+      # Same get-token.sh used by the action's authTokenCommand and the
+      # workflow pre-step — keeps the MCP generation phase, the action's
+      # runtime fetch, and the pre-step env var on a single source of truth.
+      authTokenCommand: "bash .skyramp/get-token.sh"
