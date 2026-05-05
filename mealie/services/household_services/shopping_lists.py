@@ -1,15 +1,18 @@
 from typing import cast
 
 from pydantic import UUID4
+from rapidfuzz import fuzz
 
 from mealie.core.exceptions import UnexpectedNone
 from mealie.repos.all_repositories import get_repositories
 from mealie.repos.repository_factory import AllRepositories
 from mealie.schema.household.group_shopping_list import (
+    MergeStrategy,
     ShoppingListAddRecipeParamsBulk,
     ShoppingListCreate,
     ShoppingListItemBase,
     ShoppingListItemCreate,
+    ShoppingListItemMergeAuditEntry,
     ShoppingListItemOut,
     ShoppingListItemRecipeRefCreate,
     ShoppingListItemRecipeRefOut,
@@ -33,6 +36,10 @@ from mealie.services.parser_services.parser_utils import UnitConverter, merge_qu
 
 class ShoppingListService:
     DEFAULT_FOOD_FUZZY_MATCH_THRESHOLD = 80
+    FREE_TEXT_FUZZY_MERGE_THRESHOLD = 90
+    """Minimum rapidfuzz.fuzz.WRatio score (0-100) for merge_strategy=fuzzy to merge two
+    free-text shopping list items by their note. WRatio is rapidfuzz's composite scorer
+    that handles substring relationships (e.g. 'flour' inside 'all-purpose flour')."""
 
     def __init__(self, repos: AllRepositories):
         self.repos = repos
@@ -41,6 +48,39 @@ class ShoppingListService:
         self.list_item_refs = repos.group_shopping_list_item_references
         self.list_refs = repos.group_shopping_list_recipe_refs
         self.data_matcher = DataMatcher(self.repos, food_fuzzy_match_threshold=self.DEFAULT_FOOD_FUZZY_MATCH_THRESHOLD)
+
+    def can_fuzzy_merge_notes(
+        self, item1: ShoppingListItemBase, item2: ShoppingListItemBase
+    ) -> int | None:
+        """Return rapidfuzz similarity score if two free-text items can be fuzzy-merged.
+
+        Only applies to items where neither has a food_id (free-text notes). Returns
+        the similarity score (0-100) if it meets FREE_TEXT_FUZZY_MERGE_THRESHOLD,
+        otherwise None.
+        """
+        if item1.checked or item2.checked:
+            return None
+        if item1.food_id or item2.food_id:
+            return None
+        if not item1.note or not item2.note:
+            return None
+
+        # require unit compatibility (same as can_merge)
+        if item1.unit_id != item2.unit_id:
+            item1_unit = item1.unit or self.data_matcher.units_by_id.get(item1.unit_id)
+            item2_unit = item2.unit or self.data_matcher.units_by_id.get(item2.unit_id)
+            if not (item1_unit and item1_unit.standard_unit):
+                return None
+            if not (item2_unit and item2_unit.standard_unit):
+                return None
+            uc = UnitConverter()
+            if not uc.can_convert(item1_unit.standard_unit, item2_unit.standard_unit):
+                return None
+
+        score = int(fuzz.WRatio(item1.note.strip().lower(), item2.note.strip().lower()))
+        if score >= self.FREE_TEXT_FUZZY_MERGE_THRESHOLD:
+            return score
+        return None
 
     def can_merge(self, item1: ShoppingListItemBase, item2: ShoppingListItemBase) -> bool:
         """Check to see if this item can be merged with another item"""
@@ -152,21 +192,50 @@ class ShoppingListService:
         return food_search.label_id if food_search else None
 
     def bulk_create_items(
-        self, create_items: list[ShoppingListItemCreate], auto_find_labels=True
+        self,
+        create_items: list[ShoppingListItemCreate],
+        auto_find_labels=True,
+        merge_strategy: MergeStrategy = MergeStrategy.default,
     ) -> ShoppingListItemsCollectionOut:
         """
         Create a list of items, merging into existing ones where possible.
         Optionally try to find a label for each item if one isn't provided using the item's food data or display name.
+
+        When merge_strategy=fuzzy, free-text items (no food_id) are also merged by string
+        similarity of their notes (rapidfuzz, threshold FREE_TEXT_FUZZY_MERGE_THRESHOLD).
+        Each fuzzy merge is recorded in the returned collection's merge_audit list.
         """
+
+        merge_audit: list[ShoppingListItemMergeAuditEntry] = []
+
+        def _try_merge(
+            target: ShoppingListItemBase, candidate: ShoppingListItemBase
+        ) -> int | None:
+            """Return similarity score if items should merge; None otherwise.
+            Score is 100 for exact (can_merge) matches, <100 for fuzzy."""
+            if self.can_merge(target, candidate):
+                return 100
+            if merge_strategy == MergeStrategy.fuzzy:
+                return self.can_fuzzy_merge_notes(target, candidate)
+            return None
 
         # consolidate items to be created
         consolidated_create_items: list[ShoppingListItemCreate] = []
         for create_item in create_items:
             merged = False
             for i, filtered_item in enumerate(consolidated_create_items):
-                if not self.can_merge(create_item, filtered_item):
+                score = _try_merge(create_item, filtered_item)
+                if score is None:
                     continue
-
+                if score < 100:
+                    merge_audit.append(
+                        ShoppingListItemMergeAuditEntry(
+                            from_note=create_item.note or "",
+                            into_note=filtered_item.note or "",
+                            similarity_score=score,
+                            strategy=MergeStrategy.fuzzy,
+                        )
+                    )
                 consolidated_create_items[i] = self.merge_items(create_item, filtered_item).cast(ShoppingListItemCreate)
                 merged = True
                 break
@@ -190,8 +259,18 @@ class ShoppingListService:
 
             merged = False
             for existing_item in existing_items_map[create_item.shopping_list_id]:
-                if not self.can_merge(existing_item, create_item):
+                score = _try_merge(existing_item, create_item)
+                if score is None:
                     continue
+                if score < 100:
+                    merge_audit.append(
+                        ShoppingListItemMergeAuditEntry(
+                            from_note=create_item.note or "",
+                            into_note=existing_item.note or "",
+                            similarity_score=score,
+                            strategy=MergeStrategy.fuzzy,
+                        )
+                    )
 
                 updated_existing_item = self.merge_items(create_item, existing_item).cast(
                     ShoppingListItemUpdateBulk, id=existing_item.id
@@ -219,7 +298,10 @@ class ShoppingListService:
             self.remove_unused_recipe_references(list_id)
 
         return ShoppingListItemsCollectionOut(
-            created_items=created_items, updated_items=updated_items, deleted_items=[]
+            created_items=created_items,
+            updated_items=updated_items,
+            deleted_items=[],
+            merge_audit=merge_audit,
         )
 
     def bulk_update_items(self, update_items: list[ShoppingListItemUpdateBulk]) -> ShoppingListItemsCollectionOut:
@@ -414,13 +496,14 @@ class ShoppingListService:
         self,
         list_id: UUID4,
         recipe_items: list[ShoppingListAddRecipeParamsBulk],
+        merge_strategy: MergeStrategy = MergeStrategy.default,
     ) -> tuple[ShoppingListOut, ShoppingListItemsCollectionOut]:
         """
         Adds recipe ingredients to a list
 
         Returns a tuple of:
         - Updated Shopping List
-        - Impacted Shopping List Items
+        - Impacted Shopping List Items (includes merge_audit when merge_strategy=fuzzy)
         """
 
         items_to_create = [
@@ -430,7 +513,7 @@ class ShoppingListService:
                 list_id, recipe.recipe_id, recipe.recipe_increment_quantity, recipe.recipe_ingredients
             )
         ]
-        item_changes = self.bulk_create_items(items_to_create)
+        item_changes = self.bulk_create_items(items_to_create, merge_strategy=merge_strategy)
         updated_list = cast(ShoppingListOut, self.shopping_lists.get_one(list_id))
 
         # update list-level recipe references

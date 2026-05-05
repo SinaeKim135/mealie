@@ -1,0 +1,110 @@
+[
+  {
+    "Source": "192.168.65.1:39998",
+    "Destination": "localhost",
+    "RequestBody": "{\"name\": \"flour-recipe-fuzzy-1746200000\"}",
+    "ResponseBody": "\"flour-recipe-fuzzy-1746200000\"",
+    "RequestHeaders": {
+      "Content-Type": [
+        "application/json"
+      ],
+      "Authorization": [
+        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
+      ]
+    },
+    "ResponseHeaders": {
+      "Content-Type": [
+        "application/json"
+      ]
+    },
+    "Method": "POST",
+    "Path": "/api/recipes",
+    "QueryParams": {},
+    "StatusCode": 201,
+    "Port": 9000,
+    "Timestamp": "2026-05-05T17:50:19.697Z",
+    "Scheme": "http"
+  },
+  {
+    "Source": "192.168.65.1:39998",
+    "Destination": "localhost",
+    "RequestBody": "",
+    "ResponseBody": "{\"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\", \"slug\": \"flour-recipe-fuzzy-1746200000\", \"name\": \"flour-recipe-fuzzy-1746200000\", \"recipe_ingredient\": []}",
+    "RequestHeaders": {
+      "Content-Type": [
+        "application/json"
+      ],
+      "Authorization": [
+        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
+      ]
+    },
+    "ResponseHeaders": {
+      "Content-Type": [
+        "application/json"
+      ]
+    },
+    "Method": "GET",
+    "Path": "/api/recipes/flour-recipe-fuzzy-1746200000",
+    "QueryParams": {},
+    "StatusCode": 200,
+    "Port": 9000,
+    "Timestamp": "2026-05-05T17:50:19.697Z",
+    "Scheme": "http"
+  },
+  {
+    "Source": "192.168.65.1:39998",
+    "Destination": "localhost",
+    "RequestBody": "{\"name\": \"FuzzyMerge-List-1746200000\"}",
+    "ResponseBody": "{\"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\", \"name\": \"FuzzyMerge-List-1746200000\", \"list_items\": []}",
+    "RequestHeaders": {
+      "Content-Type": [
+        "application/json"
+      ],
+      "Authorization": [
+        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
+      ]
+    },
+    "ResponseHeaders": {
+      "Content-Type": [
+        "application/json"
+      ]
+    },
+    "Method": "POST",
+    "Path": "/api/households/shopping/lists",
+    "QueryParams": {},
+    "StatusCode": 201,
+    "Port": 9000,
+    "Timestamp": "2026-05-05T17:50:19.697Z",
+    "Scheme": "http"
+  },
+  {
+    "Source": "192.168.65.1:39998",
+    "Destination": "localhost",
+    "RequestBody": "[{\"recipe_id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\", \"recipe_increment_quantity\": 1, \"recipe_ingredients\": [{\"note\": \"flour\", \"quantity\": 1}, {\"note\": \"all-purpose flour\", \"quantity\": 1}]}]",
+    "ResponseBody": "{\"id\": \"b2c3d4e5-f6a7-8901-bcde-f12345678901\", \"list_items\": [{\"note\": \"flour\"}]}",
+    "RequestHeaders": {
+      "Content-Type": [
+        "application/json"
+      ],
+      "Authorization": [
+        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
+      ]
+    },
+    "ResponseHeaders": {
+      "Content-Type": [
+        "application/json"
+      ]
+    },
+    "Method": "POST",
+    "Path": "/api/households/shopping/lists/b2c3d4e5-f6a7-8901-bcde-f12345678901/recipe",
+    "QueryParams": {
+      "merge_strategy": [
+        "fuzzy"
+      ]
+    },
+    "StatusCode": 200,
+    "Port": 9000,
+    "Timestamp": "2026-05-05T17:50:19.697Z",
+    "Scheme": "http"
+  }
+]
