@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import enum
 from datetime import datetime
 from uuid import UUID
 
@@ -149,6 +150,8 @@ class ShoppingListItemsCollectionOut(MealieModel):
     created_items: list[ShoppingListItemOut] = []
     updated_items: list[ShoppingListItemOut] = []
     deleted_items: list[ShoppingListItemOut] = []
+    merge_audit: list["ShoppingListItemMergeAuditEntry"] = []
+    """Records of fuzzy-merge events when merge_strategy=fuzzy is used. Empty for default strategy."""
 
 
 class ShoppingListMultiPurposeLabelCreate(MealieModel):
@@ -283,6 +286,28 @@ class ShoppingListOut(ShoppingListUpdate):
             selectinload(ShoppingList.label_settings).joinedload(ShoppingListMultiPurposeLabel.label),
             joinedload(ShoppingList.user).load_only(User.household_id, User.group_id),
         ]
+
+
+class MergeStrategy(enum.StrEnum):
+    """Strategy for merging shopping list items when adding ingredients from recipes.
+
+    - default: only merge items with matching food_id (DB-registered ingredients) or
+      exact note string match for free-text items.
+    - fuzzy: in addition to default behavior, fuzzy-match free-text notes using
+      string similarity (rapidfuzz). Items with similarity >= 85 are merged.
+    """
+
+    default = "default"
+    fuzzy = "fuzzy"
+
+
+class ShoppingListItemMergeAuditEntry(MealieModel):
+    """Audit record describing how two shopping list items were merged."""
+
+    from_note: str
+    into_note: str
+    similarity_score: int
+    strategy: MergeStrategy
 
 
 class ShoppingListAddRecipeParams(MealieModel):
