@@ -40,18 +40,14 @@ jobs:
       - name: Start Mealie and fetch test bearer token
         run: |
           set -euo pipefail
-
-          # Bring up the Mealie target via the shared compose file and wait
-          # for the API to respond to /api/app/about (loud failure on timeout).
+          # Bring up the Mealie target and wait for /api/app/about
+          # (loud failure on timeout).
           bash .skyramp/start-mealie.sh
 
-          # Log in as Mealie's bootstrap admin (changeme@example.com / MyPassword,
-          # auto-created on first boot) and export the bearer token to GITHUB_ENV
-          # so the skyramp/testbot action can read it via env.
-          SKYRAMP_TEST_TOKEN=$(curl -fsS -X POST http://localhost:9000/api/auth/token \
-            -H 'Content-Type: application/x-www-form-urlencoded' \
-            -d 'username=changeme%40example.com&password=MyPassword' \
-            | python3 -c 'import sys,json;print(json.load(sys.stdin)["access_token"])')
+          # Reuse the same script Skyramp's executor will invoke as
+          # authTokenCommand, so token semantics are identical between
+          # the pre-step and the action's runtime fetch.
+          SKYRAMP_TEST_TOKEN="$(bash .skyramp/get-token.sh)"
           if [[ -z "${SKYRAMP_TEST_TOKEN}" ]]; then
             echo "Failed to obtain bearer token from Mealie" >&2
             exit 1
@@ -81,10 +77,11 @@ jobs:
           targetReadyCheckTimeout: '900'
 
           # Backup: regenerate a fresh bearer token if the executor needs one
-          # at execution time. Kept as a SINGLE LINE because Skyramp's executor
-          # runs this command directly (not through bash), so backslash line
-          # continuations end up as literal '\' chars in the token value and
-          # break JSON parsing later. Same single-line shape as ebikes-lwc.
-          authTokenCommand: "curl -fsS -X POST http://localhost:9000/api/auth/token -H 'Content-Type: application/x-www-form-urlencoded' -d 'username=changeme%40example.com&password=MyPassword' | python3 -c 'import sys,json;print(json.load(sys.stdin)[\"access_token\"])'"
+          # at execution time. Delegated to a script file so YAML and the Go
+          # executor never have to handle multi-line shell or backslash line
+          # continuations — those leaked into the token earlier and broke
+          # Skyramp's JSON parsing with "invalid character '\' looking for
+          # beginning of value". Same shape as ebikes-lwc's authTokenCommand.
+          authTokenCommand: "bash .skyramp/get-token.sh"
 
           skipTargetTeardown: 'true'
