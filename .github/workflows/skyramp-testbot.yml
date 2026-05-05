@@ -64,9 +64,11 @@ jobs:
           githubToken: ${{ steps.app-token.outputs.token }}
           testDirectory: tests
 
-          # Bring Mealie up the same way as the pre-step. start-mealie.sh is
-          # idempotent (compose down -v before up), so re-running here keeps
-          # state predictable when the action invokes its own setup phase.
+          # Same boot script as the pre-step. start-mealie.sh now early-exits
+          # when /api/app/about is already healthy, so this second invocation
+          # is a no-op and the bearer token from the pre-step stays valid —
+          # matches ebikes-lwc's "deploy is idempotent" assumption while
+          # keeping the action's lifecycle hooks intact.
           targetSetupCommand: |
             set -euo pipefail
             bash .skyramp/start-mealie.sh
@@ -74,14 +76,10 @@ jobs:
           targetReadyCheckCommand: |
             curl -fsS http://localhost:9000/api/app/about > /dev/null
 
-          targetReadyCheckTimeout: '900'
+          targetReadyCheckTimeout: '60'
 
-          # Backup: regenerate a fresh bearer token if the executor needs one
-          # at execution time. Delegated to a script file so YAML and the Go
-          # executor never have to handle multi-line shell or backslash line
-          # continuations — those leaked into the token earlier and broke
-          # Skyramp's JSON parsing with "invalid character '\' looking for
-          # beginning of value". Same shape as ebikes-lwc's authTokenCommand.
+          # Backup token fetch in case the executor needs to refresh during
+          # the run. Same script as the pre-step so semantics match.
           authTokenCommand: "bash .skyramp/get-token.sh"
 
           skipTargetTeardown: 'true'
