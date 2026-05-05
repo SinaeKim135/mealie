@@ -3,7 +3,7 @@ from typing import Annotated, Any
 from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
 
 from humps import camelize
-from pydantic import UUID4, BaseModel, Field, field_validator
+from pydantic import UUID4, BaseModel, Field, computed_field, field_validator
 from pydantic_core.core_schema import ValidationInfo
 
 from mealie.schema._mealie import MealieModel
@@ -56,6 +56,16 @@ class PaginationBase[DataT: BaseModel](BaseModel):
     items: list[DataT]
     next: str | None = None
     previous: str | None = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def has_next(self) -> bool:
+        return self.page < self.total_pages
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def has_previous(self) -> bool:
+        return self.page > 1
 
     def _set_next(self, route: str, query_params: dict[str, Any]) -> None:
         if self.page >= self.total_pages:
