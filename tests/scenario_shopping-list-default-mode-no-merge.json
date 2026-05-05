@@ -1,0 +1,110 @@
+[
+  {
+    "Source": "192.168.65.1:39998",
+    "Destination": "localhost",
+    "RequestBody": "{\"name\": \"flour-recipe-def-1746000000\"}",
+    "ResponseBody": "\"flour-recipe-def-1746000000\"",
+    "RequestHeaders": {
+      "Content-Type": [
+        "application/json"
+      ],
+      "Authorization": [
+        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
+      ]
+    },
+    "ResponseHeaders": {
+      "Content-Type": [
+        "application/json"
+      ]
+    },
+    "Method": "POST",
+    "Path": "/api/recipes",
+    "QueryParams": {},
+    "StatusCode": 201,
+    "Port": 9000,
+    "Timestamp": "2026-05-05T17:22:09.828Z",
+    "Scheme": "http"
+  },
+  {
+    "Source": "192.168.65.1:39998",
+    "Destination": "localhost",
+    "RequestBody": "",
+    "ResponseBody": "{\"id\": \"cccccccc-cccc-cccc-cccc-cccccccccccc\", \"slug\": \"flour-recipe-def-1746000000\", \"name\": \"flour-recipe-def-1746000000\", \"recipe_ingredient\": []}",
+    "RequestHeaders": {
+      "Content-Type": [
+        "application/json"
+      ],
+      "Authorization": [
+        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
+      ]
+    },
+    "ResponseHeaders": {
+      "Content-Type": [
+        "application/json"
+      ]
+    },
+    "Method": "GET",
+    "Path": "/api/recipes/flour-recipe-def-1746000000",
+    "QueryParams": {},
+    "StatusCode": 200,
+    "Port": 9000,
+    "Timestamp": "2026-05-05T17:22:09.828Z",
+    "Scheme": "http"
+  },
+  {
+    "Source": "192.168.65.1:39998",
+    "Destination": "localhost",
+    "RequestBody": "{\"name\": \"DefaultTest-List-1746000000\"}",
+    "ResponseBody": "{\"id\": \"dddddddd-dddd-dddd-dddd-dddddddddddd\", \"name\": \"DefaultTest-List-1746000000\", \"list_items\": []}",
+    "RequestHeaders": {
+      "Content-Type": [
+        "application/json"
+      ],
+      "Authorization": [
+        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
+      ]
+    },
+    "ResponseHeaders": {
+      "Content-Type": [
+        "application/json"
+      ]
+    },
+    "Method": "POST",
+    "Path": "/api/households/shopping/lists",
+    "QueryParams": {},
+    "StatusCode": 201,
+    "Port": 9000,
+    "Timestamp": "2026-05-05T17:22:09.828Z",
+    "Scheme": "http"
+  },
+  {
+    "Source": "192.168.65.1:39998",
+    "Destination": "localhost",
+    "RequestBody": "[{\"recipe_id\": \"cccccccc-cccc-cccc-cccc-cccccccccccc\", \"recipe_increment_quantity\": 1, \"recipe_ingredients\": [{\"note\": \"flour\", \"quantity\": 1}, {\"note\": \"all-purpose flour\", \"quantity\": 1}]}]",
+    "ResponseBody": "{\"id\": \"dddddddd-dddd-dddd-dddd-dddddddddddd\", \"list_items\": [{\"note\": \"flour\"}, {\"note\": \"all-purpose flour\"}]}",
+    "RequestHeaders": {
+      "Content-Type": [
+        "application/json"
+      ],
+      "Authorization": [
+        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
+      ]
+    },
+    "ResponseHeaders": {
+      "Content-Type": [
+        "application/json"
+      ]
+    },
+    "Method": "POST",
+    "Path": "/api/households/shopping/lists/dddddddd-dddd-dddd-dddd-dddddddddddd/recipe",
+    "QueryParams": {
+      "merge_strategy": [
+        "default"
+      ]
+    },
+    "StatusCode": 200,
+    "Port": 9000,
+    "Timestamp": "2026-05-05T17:22:09.828Z",
+    "Scheme": "http"
+  }
+]
