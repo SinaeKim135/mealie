@@ -1,0 +1,84 @@
+[
+  {
+    "Source": "192.168.65.1:39998",
+    "Destination": "localhost",
+    "RequestBody": "{\"name\":\"flour-recipe-fuzzy-1746200000\"}",
+    "ResponseBody": "{\"id\":\"f1a2b3c4-d5e6-7890-abcd-ef1234567890\",\"slug\":\"flour-recipe-fuzzy-1746200000\"}",
+    "RequestHeaders": {
+      "Content-Type": [
+        "application/json"
+      ],
+      "Authorization": [
+        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
+      ]
+    },
+    "ResponseHeaders": {
+      "Content-Type": [
+        "application/json"
+      ]
+    },
+    "Method": "POST",
+    "Path": "/api/recipes",
+    "QueryParams": {},
+    "StatusCode": 201,
+    "Port": 9000,
+    "Timestamp": "2026-05-05T21:54:16.120Z",
+    "Scheme": "http"
+  },
+  {
+    "Source": "192.168.65.1:39998",
+    "Destination": "localhost",
+    "RequestBody": "{\"name\":\"FuzzyMerge-List-1746200000\"}",
+    "ResponseBody": "{\"id\":\"a2b3c4d5-e6f7-8901-bcde-f12345678901\",\"name\":\"FuzzyMerge-List-1746200000\",\"list_items\":[]}",
+    "RequestHeaders": {
+      "Content-Type": [
+        "application/json"
+      ],
+      "Authorization": [
+        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
+      ]
+    },
+    "ResponseHeaders": {
+      "Content-Type": [
+        "application/json"
+      ]
+    },
+    "Method": "POST",
+    "Path": "/api/households/shopping/lists",
+    "QueryParams": {},
+    "StatusCode": 201,
+    "Port": 9000,
+    "Timestamp": "2026-05-05T21:54:16.120Z",
+    "Scheme": "http"
+  },
+  {
+    "Source": "192.168.65.1:39998",
+    "Destination": "localhost",
+    "RequestBody": "[{\"recipe_id\":\"f1a2b3c4-d5e6-7890-abcd-ef1234567890\",\"recipe_increment_quantity\":1,\"recipe_ingredients\":[{\"note\":\"flour\",\"quantity\":1},{\"note\":\"all-purpose flour\",\"quantity\":1}]}]",
+    "ResponseBody": "{\"id\":\"a2b3c4d5-e6f7-8901-bcde-f12345678901\",\"list_items\":[{\"note\":\"flour\"}],\"merge_audit\":[{\"from_note\":\"all-purpose flour\",\"into_note\":\"flour\",\"similarity_score\":90,\"strategy\":\"fuzzy\"}]}",
+    "RequestHeaders": {
+      "Content-Type": [
+        "application/json"
+      ],
+      "Authorization": [
+        "Bearer SKYRAMP_PLACEHOLDER_TOKEN"
+      ]
+    },
+    "ResponseHeaders": {
+      "Content-Type": [
+        "application/json"
+      ]
+    },
+    "Method": "POST",
+    "Path": "/api/households/shopping/lists/a2b3c4d5-e6f7-8901-bcde-f12345678901/recipe",
+    "QueryParams": {
+      "merge_strategy": [
+        "fuzzy"
+      ]
+    },
+    "StatusCode": 200,
+    "Port": 9000,
+    "Timestamp": "2026-05-05T21:54:16.120Z",
+    "Scheme": "http"
+  }
+]
