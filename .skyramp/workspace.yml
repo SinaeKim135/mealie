@@ -1,0 +1,12 @@
+services:
+  - serviceName: mealie
+    testDirectory: tests
+    language: python
+    framework: pytest
+    runtimeDetails:
+      serverStartCommand: ""
+      runtime: local
+    api:
+      baseUrl: http://localhost:9000
+      authHeader: Authorization
+      authType: bearer
