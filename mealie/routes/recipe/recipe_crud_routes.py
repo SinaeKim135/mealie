@@ -45,6 +45,7 @@ from mealie.schema.recipe.recipe_scraper import ScrapeRecipeTest
 from mealie.schema.recipe.recipe_suggestion import RecipeSuggestionQuery, RecipeSuggestionResponse
 from mealie.schema.recipe.request_helpers import (
     RecipeDuplicate,
+    RecipeScaleRequest,
     UpdateImageResponse,
 )
 from mealie.schema.response import PaginationBase, PaginationQuery
@@ -443,6 +444,19 @@ class RecipeController(BaseRecipeController):
             )
 
         return new_recipe.slug
+
+    @router.post("/{slug}/scale", response_model=Recipe)
+    def scale_one(self, slug: str, req: RecipeScaleRequest) -> Recipe:
+        """Return a recipe with all ingredient quantities scaled to a new yield.
+
+        The recipe is **not** persisted. Callers receive the scaled Recipe and may
+        PUT it back to save. Useful for previewing how a recipe will look at a
+        different number of servings before committing the change.
+        """
+        try:
+            return self.service.scale_recipe(slug, req)
+        except Exception as e:
+            self.handle_exceptions(e)
 
     @router.post("/{slug}/duplicate", status_code=201, response_model=Recipe)
     def duplicate_one(self, slug: str, req: RecipeDuplicate) -> Recipe:

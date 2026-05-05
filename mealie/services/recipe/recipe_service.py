@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 from zipfile import ZipFile
 
 import sqlalchemy as sa
-from fastapi import UploadFile
+from fastapi import HTTPException, UploadFile, status
 
 from mealie.core import exceptions
 from mealie.core.config import get_app_settings
@@ -28,7 +28,7 @@ from mealie.schema.recipe.recipe_notes import RecipeNote
 from mealie.schema.recipe.recipe_settings import RecipeSettings
 from mealie.schema.recipe.recipe_step import RecipeStep
 from mealie.schema.recipe.recipe_timeline_events import RecipeTimelineEventCreate, TimelineEventType
-from mealie.schema.recipe.request_helpers import RecipeDuplicate
+from mealie.schema.recipe.request_helpers import RecipeDuplicate, RecipeScaleRequest
 from mealie.schema.user.user import PrivateUser, UserRatingCreate
 from mealie.services._base_service import BaseService
 from mealie.services.household_services.household_service import HouseholdService
@@ -398,6 +398,40 @@ class RecipeService(RecipeServiceBase):
             self.logger.error(f"Failed to copy assets from {old_recipe.slug} to {new_recipe.slug}: {e}")
 
         return new_recipe
+
+    def scale_recipe(self, slug_or_id: str | UUID, request: RecipeScaleRequest) -> Recipe:
+        """Return a scaled copy of a recipe.
+
+        Computes ``scale_factor = request.new_yield_quantity / recipe.recipe_yield_quantity``
+        and multiplies each ingredient's quantity by that factor. The recipe is NOT
+        persisted — the caller receives the scaled Recipe and may PUT it back to save.
+
+        Raises:
+            HTTPException 422 if the recipe has no positive recipe_yield_quantity
+                (cannot determine scale factor).
+        """
+        recipe = self._get_recipe(slug_or_id)
+
+        current_yield = recipe.recipe_yield_quantity or 0
+        if current_yield <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Recipe has no positive recipe_yield_quantity; scaling requires a known starting yield.",
+            )
+
+        scale_factor = request.new_yield_quantity / current_yield
+
+        scaled_ingredients: list[RecipeIngredient] = []
+        for ingredient in recipe.recipe_ingredients or []:
+            scaled_qty = (ingredient.quantity or 0) * scale_factor
+            scaled_ingredients.append(ingredient.model_copy(update={"quantity": scaled_qty}))
+
+        return recipe.model_copy(
+            update={
+                "recipe_yield_quantity": request.new_yield_quantity,
+                "recipe_ingredients": scaled_ingredients,
+            }
+        )
 
     def has_recursive_recipe_link(self, recipe: Recipe, path: set[str] | None = None):
         """Recursively checks if a recipe links to itself through its ingredients."""
