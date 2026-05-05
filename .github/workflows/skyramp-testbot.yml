@@ -40,18 +40,22 @@ jobs:
       - name: Start Mealie and fetch test bearer token
         run: |
           set -euo pipefail
-          docker rm -f mealie 2>/dev/null || true
-          docker run -d --name mealie -p 9000:9000 \
-            -e ALLOW_SIGNUP=true -e TOKEN_TIME=720 -e DB_ENGINE=sqlite \
-            ghcr.io/mealie-recipes/mealie:nightly
-          for i in $(seq 1 60); do
-            curl -fsS http://localhost:9000/api/app/about >/dev/null 2>&1 && break
-            sleep 2
-          done
+
+          # Bring up the Mealie target via the shared compose file and wait
+          # for the API to respond to /api/app/about (loud failure on timeout).
+          bash .skyramp/start-mealie.sh
+
+          # Log in as Mealie's bootstrap admin (changeme@example.com / MyPassword,
+          # auto-created on first boot) and export the bearer token to GITHUB_ENV
+          # so the skyramp/testbot action can read it via env.
           SKYRAMP_TEST_TOKEN=$(curl -fsS -X POST http://localhost:9000/api/auth/token \
             -H 'Content-Type: application/x-www-form-urlencoded' \
             -d 'username=changeme%40example.com&password=MyPassword' \
             | python3 -c 'import sys,json;print(json.load(sys.stdin)["access_token"])')
+          if [[ -z "${SKYRAMP_TEST_TOKEN}" ]]; then
+            echo "Failed to obtain bearer token from Mealie" >&2
+            exit 1
+          fi
           echo "::add-mask::${SKYRAMP_TEST_TOKEN}"
           echo "SKYRAMP_TEST_TOKEN=${SKYRAMP_TEST_TOKEN}" >> "${GITHUB_ENV}"
 
