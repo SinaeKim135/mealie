@@ -37,13 +37,34 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
 
+      - name: Start Mealie and fetch test bearer token
+        run: |
+          set -euo pipefail
+          docker rm -f mealie 2>/dev/null || true
+          docker run -d --name mealie -p 9000:9000 \
+            -e ALLOW_SIGNUP=true -e TOKEN_TIME=720 -e DB_ENGINE=sqlite \
+            ghcr.io/mealie-recipes/mealie:nightly
+          for i in $(seq 1 60); do
+            curl -fsS http://localhost:9000/api/app/about >/dev/null 2>&1 && break
+            sleep 2
+          done
+          SKYRAMP_TEST_TOKEN=$(curl -fsS -X POST http://localhost:9000/api/auth/token \
+            -H 'Content-Type: application/x-www-form-urlencoded' \
+            -d 'username=changeme%40example.com&password=MyPassword' \
+            | python3 -c 'import sys,json;print(json.load(sys.stdin)["access_token"])')
+          echo "::add-mask::${SKYRAMP_TEST_TOKEN}"
+          echo "SKYRAMP_TEST_TOKEN=${SKYRAMP_TEST_TOKEN}" >> "${GITHUB_ENV}"
+
       - uses: skyramp/testbot@v0.8.2
+        env:
+          SKYRAMP_TEST_TOKEN: ${{ env.SKYRAMP_TEST_TOKEN }}
         with:
           skyrampLicenseFile: ${{ secrets.SKYRAMP_LICENSE_FILE }}
           anthropicApiKey: ${{ secrets.SKYRAMP_TESTBOT_API_KEY }}
           githubToken: ${{ steps.app-token.outputs.token }}
-          authTokenCommand: 'curl -s -X POST http://localhost:9000/api/auth/token -H ''Content-Type: application/x-www-form-urlencoded'' -d ''username=changeme%40example.com&password=MyPassword'' | python3 -c ''import sys,json;print(json.load(sys.stdin)["access_token"])'''
-          targetSetupCommand: 'docker run -d --name mealie -p 9000:9000 -e ALLOW_SIGNUP=true -e TOKEN_TIME=720 -e DB_ENGINE=sqlite ghcr.io/mealie-recipes/mealie:nightly'
+          # Mealie is already started + token is already in SKYRAMP_TEST_TOKEN
+          # (pre-step above), so no per-run setup is needed here.
+          skipTargetSetup: 'true'
           targetReadyCheckCommand: 'curl -fsS http://localhost:9000/api/app/about'
           targetReadyCheckTimeout: '60'
           targetTeardownCommand: 'docker rm -f mealie'
