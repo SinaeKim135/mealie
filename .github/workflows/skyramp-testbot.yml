@@ -66,9 +66,26 @@ jobs:
           skyrampLicenseFile: ${{ secrets.SKYRAMP_LICENSE_FILE }}
           anthropicApiKey: ${{ secrets.SKYRAMP_TESTBOT_API_KEY }}
           githubToken: ${{ steps.app-token.outputs.token }}
-          # Mealie is already started + token is already in SKYRAMP_TEST_TOKEN
-          # (pre-step above), so no per-run setup is needed here.
-          skipTargetSetup: 'true'
-          targetReadyCheckCommand: 'curl -fsS http://localhost:9000/api/app/about'
-          targetReadyCheckTimeout: '60'
-          targetTeardownCommand: 'docker rm -f mealie'
+          testDirectory: tests
+
+          # Bring Mealie up the same way as the pre-step. start-mealie.sh is
+          # idempotent (compose down -v before up), so re-running here keeps
+          # state predictable when the action invokes its own setup phase.
+          targetSetupCommand: |
+            set -euo pipefail
+            bash .skyramp/start-mealie.sh
+
+          targetReadyCheckCommand: |
+            curl -fsS http://localhost:9000/api/app/about > /dev/null
+
+          targetReadyCheckTimeout: '900'
+
+          # Backup: regenerate a fresh bearer token if the executor needs one
+          # at execution time (matches the ebikes-lwc reference pattern).
+          authTokenCommand: |
+            curl -fsS -X POST http://localhost:9000/api/auth/token \
+              -H 'Content-Type: application/x-www-form-urlencoded' \
+              -d 'username=changeme%40example.com&password=MyPassword' \
+              | python3 -c 'import sys,json;print(json.load(sys.stdin)["access_token"])'
+
+          skipTargetTeardown: 'true'

@@ -8,7 +8,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMPOSE_FILE="${SCRIPT_DIR}/docker-compose.skyramp.yml"
 HEALTH_URL="http://localhost:9000/api/app/about"
-MAX_WAIT_SECONDS="${MEALIE_READY_TIMEOUT:-180}"
+MAX_WAIT_SECONDS="${MEALIE_READY_TIMEOUT:-900}"
 
 echo "[skyramp] tearing down any existing mealie container"
 docker compose -f "${COMPOSE_FILE}" down -v --remove-orphans 2>/dev/null || true
